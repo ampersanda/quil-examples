@@ -9,5 +9,7 @@
 - [x] White keys function
 - [ ] Black keys function
 
-### Quil 3d Terrain
+### Terrain (3d)
 - [ ] Performance problem
+
+### Wave
