@@ -8,3 +8,6 @@
 ### Piano Overtone
 - [x] White keys function
 - [ ] Black keys function
+
+### Quil 3d Terrain
+- [ ] Performance problem
