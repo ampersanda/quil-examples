@@ -1,4 +1,4 @@
-# quil-examples
+# Example of using Quil / [quil.info]
 
 ## How to run this?
 
