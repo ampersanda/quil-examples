@@ -5,6 +5,9 @@
 - Install Java
 - Install Leiningen - [https://leiningen.org]
 
+### 10 Print
+- [x] No problem
+
 ### Piano Overtone
 - [x] White keys function
 - [ ] Black keys function
@@ -13,3 +16,4 @@
 - [ ] Performance problem
 
 ### Wave
+- [x] No problem
