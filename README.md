@@ -6,7 +6,10 @@
 - Install Leiningen - [https://leiningen.org]
 
 ### 10 Print
-- [x] No problem
+- [x] No problem (I think)
+
+### Fractal Tree
+- [x] No problem (I think)
 
 ### Piano Overtone
 - [x] White keys function
@@ -16,4 +19,4 @@
 - [ ] Performance problem
 
 ### Wave
-- [x] No problem
+- [x] No problem (I think)
