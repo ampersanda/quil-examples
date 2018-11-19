@@ -11,6 +11,9 @@
 ### Fractal Tree
 - [x] No problem (I think)
 
+### Lissajous Table
+- [x] No problem (I think)
+
 ### Piano Overtone
 - [x] White keys function
 - [ ] Black keys function
