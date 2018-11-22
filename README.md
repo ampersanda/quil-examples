@@ -19,7 +19,7 @@
 - [ ] Black keys function
 
 ### Terrain (3d)
-- [ ] Performance problem
+- [x] Performance problem (fixed)
 
 ### Wave
 - [x] No problem (I think)

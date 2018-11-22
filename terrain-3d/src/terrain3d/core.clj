@@ -6,46 +6,64 @@
 (def w 2400)
 (def h 900)
 (def randomness 0.16)
-(def depth -100)
-(def height 100)
-(def walk-speed 0.1)
+(def depth -64)
+(def height 64)
+(def walk-speed 0.2)
+
+(def table (atom {:rows    nil
+                  :columns nil
+                  :terrain nil}))
+
 
 (defn setup []
-  (q/frame-rate 60)
-  (q/color-mode :rgb)
+  (q/frame-rate 30)
+  (q/color-mode :hsb)
+
+
+  (let [cols (/ w scale)
+        rows (/ h scale)]
+
+    (swap! table assoc :rows rows)
+    (swap! table assoc :columns cols)
+    (swap! table assoc :terrain (vec (repeat cols (vec (repeat rows nil))))))
+
   {:walk 0})
 
-(defn update-state [{:keys [walk] :as state}]
+(defn update-state [{:keys [walk]}]
   {:walk (- walk walk-speed)})
 
-(defn draw-state [{:keys [walk] :as keys}]
+(defn draw-state [{:keys [walk]}]
   (q/background 0)
 
-  (let [rows (/ h scale)
-        cols (/ w scale)
-        terrain (to-array-2d (repeat cols (repeat rows nil)))]
+  (let [cols (:columns @table)
+        rows (:rows @table)]
 
     (doseq [y (range rows)]
       (let [yoff (- (* y randomness) walk)]
         (doseq [x (range cols)]
           (let [xoff (* x randomness)]
-            (aset terrain x y (q/map-range (q/noise xoff yoff) 0 1 depth height))))))
+            (swap! table assoc-in [:terrain x y] (q/map-range (q/noise xoff yoff) 0 1 depth height))))))
 
     (q/no-fill)
     (q/stroke 255)
-    (q/with-translation [(/ w 2) (/ h 2)]
+    (q/with-translation
+      [(/ w 2) (/ h 2)]
+
       (q/rotate-x (/ q/PI 3))
-      (q/with-translation [(/ (- w) 1.6) (/ (- h) 2)]
+      (q/with-translation
+        [(/ (- w) 1.6) (/ (- h) 2)]
 
         (doseq [y (range (dec rows))]
           (q/begin-shape :triangle-strip)
 
           (doseq [x (range cols)]
-            (q/vertex (* x scale) (* y scale) (aget terrain x y))
-            (q/vertex (* x scale)  (* (inc y) scale) (aget terrain x (inc y))))
+            (let [posx (* x scale)]
+              (q/vertex posx (* y scale) (nth (nth (:terrain @table) x) y))
+              (q/vertex posx (* (inc y) scale) (nth (nth (:terrain @table) x) (inc y)))))
           (q/end-shape))))))
 
-(q/defsketch terrain3d
+(q/defsketch
+  terrain3d
   :title "3d Terrain"
   :size [600 600]
   :setup setup

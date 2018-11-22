@@ -2,13 +2,13 @@
   (:require [quil.core :as q]
             [quil.middleware :as m]))
 
-(def circle-width 80)
+(def circle-width 62.5)
 (def rules (atom {:columns 0
                   :rows    0
                   :curves  nil}))
 
 (defn setup []
-  (q/frame-rate 30)
+  (q/frame-rate 60)
   (q/color-mode :hsb)
 
   (let [cols (dec (/ (q/width) circle-width))
@@ -21,7 +21,7 @@
   {:angle 0})
 
 (defn update-state [{:keys [angle]}]
-  {:angle (+ angle 0.02)})
+  {:angle (+ angle 0.04)})
 
 (defn create-circles-and-guides [angle mode]
   (let [hcw (/ circle-width 2)]
@@ -99,7 +99,7 @@
 
 (q/defsketch lissajous
              :title "Ampersanda - Lissajous"
-             :size [800 800]
+             :size [500 500]
              :setup setup
              :update update-state
              :draw draw-state
