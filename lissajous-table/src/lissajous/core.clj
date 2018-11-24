@@ -21,7 +21,7 @@
   {:angle 0})
 
 (defn update-state [{:keys [angle]}]
-  {:angle (+ angle 0.04)})
+  {:angle (+ angle 0.1)})
 
 (defn create-circles-and-guides [angle mode]
   (let [hcw (/ circle-width 2)]
@@ -93,7 +93,15 @@
                            (q/end-shape))
 
           current (nth (nth (:curves @rules) r) c)]
+
+      ;; remove the first point after more than 1 circle
+      (if (>= angle q/TWO-PI)
+        (swap! rules update-in [:curves r c :points] #(subvec % 1)))
+
+      ;; add points
       (swap! rules update-in [:curves r c :points] conj {:x (:x current) :y (:y current)})
+
+      ;; draw
       (draw-lissajous (:points current)))))
 
 
