@@ -2,29 +2,55 @@
   (:require [quil.core :as q]
             [quil.middleware :as m]))
 
+;;;
+;;; Lissajous Table
+;;; See https://en.wikipedia.org/wiki/Lissajous_curve
+;;;
+
 (def circle-width 62.5)
-(def rules (atom {:columns 0
-                  :rows    0
-                  :curves  nil}))
+
+; atom holding state of the table. See its structure
+; in setup function.
+(def rules (atom nil))
+
+(defn generate-speeds
+  "Generates angle speeds for n circles. Speed is an integer. All speeds
+  will be unique. If n > 6 then speeds will be 1, 2, ..., n otherwise
+  speeds will be randomly selected from 1 to 6. This is done so that
+  on small n we get random circles on each sketch run."
+  [n]
+  (->>
+    (range 1 (max (inc n) 6))
+    (shuffle)
+    (take n)
+    (sort)))
 
 (defn setup []
   (q/frame-rate 60)
-  (q/color-mode :hsb)
+  (let [cols (dec (quot (q/width) circle-width))
+        rows (dec (quot (q/height) circle-width))]
+    (reset! rules
+            {; number of circles in columns and rows that fit sketch size
+             :columns cols
+             :rows rows
 
-  (let [cols (dec (/ (q/width) circle-width))
-        rows (dec (/ (q/height) circle-width))]
+             ; angle speed controlling how fast each circle rotates
+             :speeds {:columns (generate-speeds cols)
+                      :rows (generate-speeds cols)}
 
-    (swap! rules assoc :columns cols)
-    (swap! rules assoc :rows rows)
-    (swap! rules assoc :curves (vec (repeat cols (vec (repeat rows {:x nil :y nil :points []}))))))
+             ; table of curves. each curve contains its current position under :x :y
+             ; and vector of all points in :points vector
+             :curves (->> {:x 0 :y 0 :points []}
+                          (repeat cols)
+                          vec
+                          (repeat rows)
+                          vec)})))
 
-  {:angle 0})
-
-(defn update-state [{:keys [angle]}]
-  {:angle (+ angle 0.1)})
-
-(defn create-circles-and-guides [angle mode]
-  (let [hcw (/ circle-width 2)]
+(defn draw-circles-and-guides [angle mode]
+  (let [hcw (/ circle-width 2)
+        diameter (- circle-width 10)
+        r (/ diameter 2)
+        speed ((:speeds @rules) mode)]
     (doseq [i (range (mode @rules))]
       (let [def-cx (+ (* i circle-width) hcw circle-width)
             cx (cond (= :columns mode) def-cx
@@ -33,83 +59,70 @@
             cy (cond (= :columns mode) hcw
                      (= :rows mode) def-cx)
 
-            diameter (- circle-width 10)
-            r (/ diameter 2)
+            angle-speed (* angle (nth speed i))
 
-            angle-speed (* angle (inc i))
             angle-set-to-zero (- angle-speed q/HALF-PI)
 
             x (* r (q/cos angle-set-to-zero))
             y (* r (q/sin angle-set-to-zero))
 
             point-x (+ cx x)
-            point-y (+ cy y)
+            point-y (+ cy y)]
 
-            create-circle (fn []
-                            (q/stroke-weight 1)
-                            (q/ellipse cx cy diameter diameter))
+        ; draw circle
+        (q/stroke-weight 1)
+        (q/ellipse cx cy diameter diameter)
 
-            create-point (fn []
-                           (q/stroke-weight 8)
-                           (q/point point-x point-y))
+        ; draw point
+        (q/stroke-weight 8)
+        (q/point point-x point-y)
 
-            create-line (fn []
-                          (q/stroke-weight 1)
-                          (cond (= :columns mode) (q/line point-x 0 point-x (q/height))
-                                (= :rows mode) (q/line 0 point-y (q/width) point-y)))]
-
-
-        (create-circle)
-        (create-point)
-        (create-line)
+        ; draw line
+        (q/stroke-weight 1)
+        (if (= :columns mode)
+          (q/line point-x 0 point-x (q/height))
+          (q/line 0 point-y (q/width) point-y))
 
         (cond
-          (= :columns mode) (doseq [j (range (:rows @rules))] (swap! rules assoc-in [:curves j i :x] point-x))
-          (= :rows mode) (doseq [j (range (:columns @rules))] (swap! rules assoc-in [:curves i j :y] point-y)))))))
+          (= :columns mode)
+          (doseq [j (range (:rows @rules))]
+            (swap! rules assoc-in [:curves j i :x] point-x))
+          (= :rows mode)
+          (doseq [j (range (:columns @rules))]
+            (swap! rules assoc-in [:curves i j :y] point-y)))))))
 
-(defn draw-state [{:keys [angle]}]
+(defn draw-lissajous [points]
+  (q/stroke-weight 1)
+  (q/begin-shape)
+  (doseq [p points]
+    (q/vertex (:x p) (:y p)))
+  (q/end-shape))
+
+(defn draw-state [state]
   (q/background 0)
-
   (q/no-fill)
   (q/stroke 255)
 
-  (create-circles-and-guides angle :columns)
-  (create-circles-and-guides angle :rows)
+  (let [angle (* 0.04 (q/frame-count))]
+    (draw-circles-and-guides angle :columns)
+    (draw-circles-and-guides angle :rows)
+    (doseq [r (range (:rows @rules))
+            c (range (:columns @rules))]
+      (let [{:keys [x y points]} (nth (nth (:curves @rules) r) c)]
+        ; add current point to the curve list. We add new point only if
+        ; we haven't done a full 2PI iteration after which curve repeats
+        ; so no point to store new points.
+        (when (<= angle q/TWO-PI)
+          (swap! rules update-in [:curves r c :points] conj
+                 {:x x :y y}))
 
-  (doseq [r (range (:rows @rules))
-          c (range (:columns @rules))]
-    (let [draw-lissajous (fn [points]
-                           (q/stroke 255)
-                           (q/stroke-weight 1)
-                           (q/no-fill)
-                           (q/begin-shape)
-
-                           (doseq [x (range (count points))]
-                             (let [p (nth points x)
-                                   posx (:x p)
-                                   posy (:y p)]
-                               (q/vertex posx posy)))
-
-                           (q/end-shape))
-
-          current (nth (nth (:curves @rules) r) c)]
-
-      ;; remove the first point after more than 1 circle
-      (if (>= angle q/TWO-PI)
-        (swap! rules update-in [:curves r c :points] #(subvec % 1)))
-
-      ;; add points
-      (swap! rules update-in [:curves r c :points] conj {:x (:x current) :y (:y current)})
-
-      ;; draw
-      (draw-lissajous (:points current)))))
+        (draw-lissajous points)))))
 
 
 (q/defsketch lissajous
              :title "Ampersanda - Lissajous"
              :size [500 500]
              :setup setup
-             :update update-state
              :draw draw-state
              :features [:keep-on-top]
              :middleware [m/fun-mode])
