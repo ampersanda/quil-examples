@@ -44,11 +44,11 @@
                   (swap! coords assoc :x (q/lerp x ax amt))
                   (swap! coords assoc :y (q/lerp y ay amt)))
         (= r 1) (do
-                  (swap! coords assoc :x (q/lerp x (@coords :bx) amt))
-                  (swap! coords assoc :y (q/lerp y (@coords :by) amt)))
+                  (swap! coords assoc :x (q/lerp x bx amt))
+                  (swap! coords assoc :y (q/lerp y by amt)))
         (= r 2) (do
-                  (swap! coords assoc :x (q/lerp x (@coords :cx) amt))
-                  (swap! coords assoc :y (q/lerp y (@coords :cy) amt)))))))
+                  (swap! coords assoc :x (q/lerp x cx amt))
+                  (swap! coords assoc :y (q/lerp y cy amt)))))))
 
 (q/defsketch chaos-game-1
   :title "You spin my circle right round"
