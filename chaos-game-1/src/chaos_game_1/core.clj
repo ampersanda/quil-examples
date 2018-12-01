@@ -2,47 +2,58 @@
   (:require [quil.core :as q]
             [quil.middleware :as m]))
 
-(defn setup []
-  ; Set frame rate to 30 frames per second.
-  (q/frame-rate 30)
-  ; Set color mode to HSB (HSV) instead of default RGB.
-  (q/color-mode :hsb)
-  ; setup function returns initial state. It contains
-  ; circle color and position.
-  {:color 0
-   :angle 0})
 
-(defn update-state [state]
-  ; Update sketch state by changing circle color and position.
-  {:color (mod (+ (:color state) 0.7) 255)
-   :angle (+ (:angle state) 0.1)})
+(def coords (atom 0))
+
+(defn setup []
+  (q/frame-rate 30)
+  (q/color-mode :hsb)
+
+  (q/background 255)
+  (q/stroke 0)
+  (q/stroke-weight 8)
+
+  (let [w       (q/width)
+        h       (q/height)]
+    (reset! coords
+            {:ax (/ w 2)
+             :ay 0
+             :bx 0
+             :by h
+             :cx w
+             :cy h
+
+             :x  (q/random w)
+             :y  (q/random h)})
+
+    (q/point (@coords :ax) (@coords :ay))
+    (q/point (@coords :bx) (@coords :by))
+    (q/point (@coords :cx) (@coords :cy))))
 
 (defn draw-state [state]
-  ; Clear the sketch by filling it with light-grey color.
-  (q/background 240)
-  ; Set circle color.
-  (q/fill (:color state) 255 255)
-  ; Calculate x and y coordinates of the circle.
-  (let [angle (:angle state)
-        x (* 150 (q/cos angle))
-        y (* 150 (q/sin angle))]
-    ; Move origin point to the center of the sketch.
-    (q/with-translation [(/ (q/width) 2)
-                         (/ (q/height) 2)]
-      ; Draw the circle.
-      (q/ellipse x y 100 100))))
+  (doseq [i (range 100)]
+    (q/stroke 0)
+    (q/stroke-weight 2)
+    (q/point (@coords :x) (@coords :y))
 
+    (let [r                               (int (Math/floor (q/random 3)))
+          {:keys [x y ax ay bx by cx cy]} @coords
+          amt                             0.5]
+      (cond
+        (= r 0) (do
+                  (swap! coords assoc :x (q/lerp x ax amt))
+                  (swap! coords assoc :y (q/lerp y ay amt)))
+        (= r 1) (do
+                  (swap! coords assoc :x (q/lerp x (@coords :bx) amt))
+                  (swap! coords assoc :y (q/lerp y (@coords :by) amt)))
+        (= r 2) (do
+                  (swap! coords assoc :x (q/lerp x (@coords :cx) amt))
+                  (swap! coords assoc :y (q/lerp y (@coords :cy) amt)))))))
 
 (q/defsketch chaos-game-1
   :title "You spin my circle right round"
   :size [500 500]
-  ; setup function called only once, during sketch initialization.
   :setup setup
-  ; update-state is called on each iteration before draw-state.
-  :update update-state
   :draw draw-state
   :features [:keep-on-top]
-  ; This sketch uses functional-mode middleware.
-  ; Check quil wiki for more info about middlewares and particularly
-  ; fun-mode.
   :middleware [m/fun-mode])
