@@ -9,20 +9,17 @@
 - `(require '[project-file.core] :reload-all)`
 
 ### 10 Print
-- [x] No problem (I think)
 
 ### Fractal Tree
-- [x] No problem (I think)
 
 ### Lissajous Table
-- [x] No problem (I think)
+
+### Parameterized Wave by http://formandcode.com/code-examples/parameterize-waves
 
 ### Piano Overtone
 - [x] White keys function
 - [ ] Black keys function
 
 ### Terrain (3d)
-- [x] Performance problem (fixed)
 
 ### Wave
-- [x] No problem (I think)
