@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Leiningen: quil/gluegen-rt-fat:2.3.2">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.m2/repository/quil/gluegen-rt-fat/2.3.2/gluegen-rt-fat-2.3.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
