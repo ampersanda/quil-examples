@@ -4,6 +4,9 @@
 
 - Install Java
 - Install Leiningen - [https://leiningen.org]
+- `cd` into the project folder
+- `lein repl`
+- `(require '[project-file.core] :reload-all)`
 
 ### 10 Print
 - [x] No problem (I think)
