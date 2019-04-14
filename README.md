@@ -10,6 +10,8 @@
 
 ### 10 Print
 
+### Chaos Game
+
 ### Fractal Tree
 
 ### Lissajous Table
